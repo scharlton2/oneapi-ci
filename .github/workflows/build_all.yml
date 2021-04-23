@@ -79,6 +79,7 @@ jobs:
     - name: build
       run: scripts/build_windows.bat fortran
     - name: interrogate
+      shell: cmd
       run: path
     - name: exclude unused files from cache
       if: steps.cache-install.outputs.cache-hit != 'true'
