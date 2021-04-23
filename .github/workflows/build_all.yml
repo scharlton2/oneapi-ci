@@ -84,7 +84,8 @@ jobs:
         Get-ChildItem Env:
         Write-Output $Env:Path
         Get-Command cmake
-        Get-Command ifort
+        Write-Output "ifort not in path"
+        Get-ChildItem "C:\Program Files (x86)\"
     - name: exclude unused files from cache
       if: steps.cache-install.outputs.cache-hit != 'true'
       shell: bash
