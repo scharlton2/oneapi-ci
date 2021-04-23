@@ -86,6 +86,7 @@ jobs:
         Get-Command cmake
         Write-Output "ifort not in path"
         Get-ChildItem "C:\Program Files (x86)\"
+        Get-ChildItem "C:\Program Files (x86)\C:\Program Files (x86)\Microsoft Visual Studio\"
     - name: exclude unused files from cache
       if: steps.cache-install.outputs.cache-hit != 'true'
       shell: bash
