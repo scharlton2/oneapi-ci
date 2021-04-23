@@ -79,8 +79,12 @@ jobs:
     - name: build
       run: scripts/build_windows.bat fortran
     - name: interrogate
-      shell: cmd
-      run: path
+      shell: pwsh
+      run: |
+        Get-ChildItem Env:
+        Write-Output $Env:Path
+        Get-Command cmake
+        Get-Command ifort
     - name: exclude unused files from cache
       if: steps.cache-install.outputs.cache-hit != 'true'
       shell: bash
