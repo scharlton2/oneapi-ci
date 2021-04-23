@@ -80,10 +80,6 @@ jobs:
       run: scripts/build_windows.bat fortran
     - name: interrogate
       run: path
-      run: where cmake
-      run: where ifort
-      run: cmake --version
-      run: ifort --version
     - name: exclude unused files from cache
       if: steps.cache-install.outputs.cache-hit != 'true'
       shell: bash
