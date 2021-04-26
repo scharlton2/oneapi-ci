@@ -31,6 +31,31 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Cache BaseKit
+      id: cache-basekit
+      uses: actions/cache@v2
+      with:
+        path: BaseKit_offline.exe
+        key: ${{ runner.os }}-BaseKit
+
+    - name: Download BaseKit
+      shell: cmd
+      if: steps.cache-basekit.outputs.cache-hit != 'true'
+      run: curl.exe --output BaseKit_offline.exe --url %WINDOWS_BASEKIT_URL% --retry 5 --retry-delay 5
+
+    - name: Check download
+      shell: cmd
+      run: dir
+
+    - name: Check hash
+      shell: cmd
+      run: echo ${{ hashFiles('BaseKit_offline.exe') }}
+
+    - name: Check hash powershell
+      shell: pwsh
+      run: Get-FileHash -Algorithm SHA256 BaseKit_offline.exe
+
+
     - name: Cache HPCKit
       id: cache-hpckit
       uses: actions/cache@v2
@@ -51,6 +76,9 @@ jobs:
       shell: cmd
       run: echo ${{ hashFiles('HPCKit_offline.exe') }}
 
+    - name: Check hash powershell
+      shell: pwsh
+      run: Get-FileHash -Algorithm SHA256 HPCKit_offline.exe
 
 # jobs:
 #   install_windows_basekit:
