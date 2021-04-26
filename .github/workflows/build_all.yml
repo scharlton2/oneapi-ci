@@ -78,6 +78,17 @@ jobs:
       run: scripts/install_windows.bat $WINDOWS_HPCKIT_URL $WINDOWS_FORTRAN_COMPONENTS
     - name: build
       run: scripts/build_windows.bat fortran
+    - name: interrogate
+      shell: pwsh
+      run: |
+        Get-ChildItem Env:
+        Write-Output $Env:Path
+        Get-Command cmake
+        Write-Output "ifort not in path"
+        Get-ChildItem "C:\Program Files (x86)\"
+        Get-ChildItem "C:\Program Files (x86)\Microsoft Visual Studio\"
+        Get-ChildItem "C:\Program Files (x86)\Intel\"
+        Get-ChildItem "C:\Program Files (x86)\Intel\oneAPI\"
     - name: build cmake
       shell: cmd
       run: |
