@@ -81,6 +81,7 @@ jobs:
     - name: interrogate
       shell: pwsh
       run: |
+        $PSVersionTable
         Get-ChildItem Env:
         Write-Output $Env:Path
         Get-Command cmake
@@ -89,6 +90,7 @@ jobs:
         Get-ChildItem "C:\Program Files (x86)\Microsoft Visual Studio\"
         Get-ChildItem "C:\Program Files (x86)\Intel\"
         Get-ChildItem "C:\Program Files (x86)\Intel\oneAPI\"
+        Get-ChildItem -Recurse "C:\Program Files (x86)\Intel\oneAPI\"
     - name: build cmake
       shell: cmd
       run: |
