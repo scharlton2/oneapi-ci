@@ -31,21 +31,25 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Cache BaseKit
-      id: cache-basekit
+    - name: Cache HPCKit
+      id: cache-hpckit
       uses: actions/cache@v2
       with:
-        path: w_BaseKit_p_2021.2.0.2871_offline.exe
-        key: ${{ runner.os }}-BaseKit-${{ hashFiles('w_BaseKit_p_2021.2.0.2871_offline.exe') }}
+        path: HPCKit_offline.exe
+        key: ${{ runner.os }}-HPCKit
 
-    - name: Download BaseKit
+    - name: Download HPCKit
       shell: cmd
-      if: steps.cache-basekit.outputs.cache-hit != 'true'
-      run: curl.exe --url %WINDOWS_BASEKIT_URL% --retry 5 --retry-delay 5
+      if: steps.cache-hpckit.outputs.cache-hit != 'true'
+      run: curl.exe --output HPCKit_offline.exe --url %WINDOWS_HPCKIT_URL% --retry 5 --retry-delay 5
 
     - name: Check download
       shell: cmd
       run: dir
+
+    - name: Check hash
+      shell: cmd
+      run: echo ${{ hashFiles('HPCKit_offline.exe') }}
 
 
 # jobs:
