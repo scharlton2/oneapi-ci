@@ -25,6 +25,31 @@ env:
   MACOS_FORTRAN_COMPONENTS: intel.oneapi.mac.ifort-compiler
 
 jobs:
+  install_windows_basekit:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+    - uses: actions/checkout@v2
+    - name: install
+      shell: cmd
+      run: |
+        curl.exe --output basekit.exe --url %WINDOWS_BASEKIT_URL% --retry 5 --retry-delay 5
+        start /b /wait basekit.exe -s -x -f basekit_extracted --log basekit.log
+        del webimage.exe
+        basekit_extracted\bootstrapper.exe -s --action install --eula=accept --continue-with-optional-error=yes -p=NEED_VS2017_INTEGRATION=0 -p=NEED_VS2019_INTEGRATION=1 --log-dir=.
+
+    # Delete the following if you don't want to save install logs
+    - name: Saving install logs
+      uses: actions/upload-artifact@v2
+      with:
+        name: InstallLogs_${{ github.job }}
+        path: |
+          basekit.log
+        retention-days: 7
+
+
   # build_windows_cpp:
   #   runs-on: windows-latest
   #   defaults:
@@ -60,76 +85,76 @@ jobs:
   #         installer*
   #       retention-days: 7
 
-  build_windows_fortran:
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: bash
-    steps:
-    - uses: actions/checkout@v2
-    - name: cache install
-      id: cache-install
-      uses: actions/cache@v2
-      with:
-        path: C:\Program Files (x86)\Intel\oneAPI\compiler
-        key: install-${{ env.WINDOWS_HPCKIT_URL }}-${{ env.WINDOWS_FORTRAN_COMPONENTS }}-compiler-${{ hashFiles('**/scripts/cache_exclude_windows.sh') }}
-    - name: install
-      if: steps.cache-install.outputs.cache-hit != 'true'
-      run: scripts/install_windows.bat $WINDOWS_HPCKIT_URL $WINDOWS_FORTRAN_COMPONENTS
-    - name: build
-      run: scripts/build_windows.bat fortran
-    - name: interrogate
-      shell: pwsh
-      run: |
-        $PSVersionTable
-        Get-ChildItem Env:
-        Write-Output $Env:Path
-        Get-Command cmake
-        Write-Output "ifort not in path"
-        Get-ChildItem "C:\Program Files (x86)\"
-        Get-ChildItem "C:\Program Files (x86)\Microsoft Visual Studio\"
-        Get-ChildItem "C:\Program Files (x86)\Intel\"
-        Get-ChildItem "C:\Program Files (x86)\Intel\oneAPI\"
-        Get-ChildItem -Recurse "C:\Program Files (x86)\Intel\oneAPI\"
-    - name: build cmake
-      shell: cmd
-      run: |
-        echo %ONEAPI_ROOT%
-        "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 vs2019
-        echo %ONEAPI_ROOT%
-        pushd src\cmake
-        cmake -S . -B _build -G "Visual Studio 16 2019"
-        cmake --build _build --config RelWithDebInfo
-        pushd _build
-        ctest --build-config RelWithDebInfo
-        popd
-        popd
-    - name: build openmp
-      shell: cmd
-      run: |
-        echo %ONEAPI_ROOT%
-        pushd src\openmp
-        cmake -S . -B _build -G "Visual Studio 16 2019"
-        cmake --build _build --config RelWithDebInfo
-        pushd _build
-        ctest --build-config RelWithDebInfo
-        popd
-        popd
-    - name: build mpi
-      shell: cmd
-      run: |
-        echo %ONEAPI_ROOT%
-        pushd src\mpi
-        cmake -S . -B _build -G "Visual Studio 16 2019"
-        cmake --build _build --config RelWithDebInfo
-        pushd _build
-        ctest --build-config RelWithDebInfo
-        popd
-        popd
-    - name: exclude unused files from cache
-      if: steps.cache-install.outputs.cache-hit != 'true'
-      shell: bash
-      run: scripts/cache_exclude_windows.sh
+  # build_windows_fortran:
+  #   runs-on: windows-latest
+  #   defaults:
+  #     run:
+  #       shell: bash
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - name: cache install
+  #     id: cache-install
+  #     uses: actions/cache@v2
+  #     with:
+  #       path: C:\Program Files (x86)\Intel\oneAPI\compiler
+  #       key: install-${{ env.WINDOWS_HPCKIT_URL }}-${{ env.WINDOWS_FORTRAN_COMPONENTS }}-compiler-${{ hashFiles('**/scripts/cache_exclude_windows.sh') }}
+  #   - name: install
+  #     if: steps.cache-install.outputs.cache-hit != 'true'
+  #     run: scripts/install_windows.bat $WINDOWS_HPCKIT_URL $WINDOWS_FORTRAN_COMPONENTS
+  #   - name: build
+  #     run: scripts/build_windows.bat fortran
+  #   - name: interrogate
+  #     shell: pwsh
+  #     run: |
+  #       $PSVersionTable
+  #       Get-ChildItem Env:
+  #       Write-Output $Env:Path
+  #       Get-Command cmake
+  #       Write-Output "ifort not in path"
+  #       Get-ChildItem "C:\Program Files (x86)\"
+  #       Get-ChildItem "C:\Program Files (x86)\Microsoft Visual Studio\"
+  #       Get-ChildItem "C:\Program Files (x86)\Intel\"
+  #       Get-ChildItem "C:\Program Files (x86)\Intel\oneAPI\"
+  #       Get-ChildItem -Recurse "C:\Program Files (x86)\Intel\oneAPI\"
+  #   - name: build cmake
+  #     shell: cmd
+  #     run: |
+  #       echo %ONEAPI_ROOT%
+  #       "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 vs2019
+  #       echo %ONEAPI_ROOT%
+  #       pushd src\cmake
+  #       cmake -S . -B _build -G "Visual Studio 16 2019"
+  #       cmake --build _build --config RelWithDebInfo
+  #       pushd _build
+  #       ctest --build-config RelWithDebInfo
+  #       popd
+  #       popd
+  #   - name: build openmp
+  #     shell: cmd
+  #     run: |
+  #       echo %ONEAPI_ROOT%
+  #       pushd src\openmp
+  #       cmake -S . -B _build -G "Visual Studio 16 2019"
+  #       cmake --build _build --config RelWithDebInfo
+  #       pushd _build
+  #       ctest --build-config RelWithDebInfo
+  #       popd
+  #       popd
+  #   - name: build mpi
+  #     shell: cmd
+  #     run: |
+  #       echo %ONEAPI_ROOT%
+  #       pushd src\mpi
+  #       cmake -S . -B _build -G "Visual Studio 16 2019"
+  #       cmake --build _build --config RelWithDebInfo
+  #       pushd _build
+  #       ctest --build-config RelWithDebInfo
+  #       popd
+  #       popd
+  #   - name: exclude unused files from cache
+  #     if: steps.cache-install.outputs.cache-hit != 'true'
+  #     shell: bash
+  #     run: scripts/cache_exclude_windows.sh
 
     # # Delete the following if you don't want to save install logs
     # - name: Saving install logs
