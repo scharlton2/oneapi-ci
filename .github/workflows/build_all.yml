@@ -78,15 +78,41 @@ jobs:
       run: scripts/install_windows.bat $WINDOWS_HPCKIT_URL $WINDOWS_FORTRAN_COMPONENTS
     - name: build
       run: scripts/build_windows.bat fortran
-    - name: interrogate
-      shell: pwsh
+    - name: build cmake
+      shell: cmd
       run: |
-        Get-ChildItem Env:
-        Write-Output $Env:Path
-        Get-Command cmake
-        Write-Output "ifort not in path"
-        Get-ChildItem "C:\Program Files (x86)\"
-        Get-ChildItem "C:\Program Files (x86)\Microsoft Visual Studio\"
+        echo %ONEAPI_ROOT%
+        "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 vs2019
+        echo %ONEAPI_ROOT%
+        pushd src\cmake
+        cmake -S . -B _build -G "Visual Studio 16 2019"
+        cmake --build _build --config RelWithDebInfo
+        pushd _build
+        ctest --build-config RelWithDebInfo
+        popd
+        popd
+    - name: build openmp
+      shell: cmd
+      run: |
+        echo %ONEAPI_ROOT%
+        pushd src\openmp
+        cmake -S . -B _build -G "Visual Studio 16 2019"
+        cmake --build _build --config RelWithDebInfo
+        pushd _build
+        ctest --build-config RelWithDebInfo
+        popd
+        popd
+    - name: build mpi
+      shell: cmd
+      run: |
+        echo %ONEAPI_ROOT%
+        pushd src\mpi
+        cmake -S . -B _build -G "Visual Studio 16 2019"
+        cmake --build _build --config RelWithDebInfo
+        pushd _build
+        ctest --build-config RelWithDebInfo
+        popd
+        popd
     - name: exclude unused files from cache
       if: steps.cache-install.outputs.cache-hit != 'true'
       shell: bash
