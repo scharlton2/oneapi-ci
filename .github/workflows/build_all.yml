@@ -24,6 +24,13 @@ env:
   MACOS_CPP_COMPONENTS: intel.oneapi.mac.cpp-compiler
   MACOS_FORTRAN_COMPONENTS: intel.oneapi.mac.ifort-compiler
 
+# Base Toolkit
+# intel.oneapi.win.mkl.devel         -- Intel® oneAPI Math Kernel Library
+
+# HPC Toolkit
+# intel.oneapi.win.mpi.devel         -- Intel® MPI Library
+# intel.oneapi.win.ifort-compiler    -- Intel® Fortran Compiler (Beta) & Intel® Fortran Compiler Classic
+
 jobs:
   build:
     runs-on: windows-latest
@@ -55,6 +62,12 @@ jobs:
       shell: pwsh
       run: Get-FileHash -Algorithm SHA256 BaseKit_offline.exe
 
+    - name: install basekit
+      shell: cmd
+      run: |
+        start /b /wait BaseKit_offline.exe -s -x -f basekit_extracted --log basekit.log
+        basekit_extracted\bootstrapper.exe -s --action install --components=intel.oneapi.win.mkl.devel --eula=accept --continue-with-optional-error=yes -p=NEED_VS2017_INTEGRATION=0 -p=NEED_VS2019_INTEGRATION=1 --log-dir=.
+
 
     - name: Cache HPCKit
       id: cache-hpckit
@@ -79,6 +92,13 @@ jobs:
     - name: Check hash powershell
       shell: pwsh
       run: Get-FileHash -Algorithm SHA256 HPCKit_offline.exe
+
+    - name: install hpckit
+      shell: cmd
+      run: |
+        start /b /wait HPCKit_offline.exe -s -x -f hpckit_extracted --log hpckit.log
+        hpckit_extracted\bootstrapper.exe -s --action install --components=intel.oneapi.win.ifort-compiler --eula=accept --continue-with-optional-error=yes -p=NEED_VS2017_INTEGRATION=0 -p=NEED_VS2019_INTEGRATION=1 --log-dir=.
+
 
 # jobs:
 #   install_windows_basekit:
